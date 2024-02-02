@@ -1,0 +1,394 @@
+---
+  title: "Untitled"
+author: "Aqsa Adab"
+date: "`r Sys.Date()`"
+output: word_document
+---
+#Step1: Exploratery Data Analysis
+
+
+
+
+# Load readxl for Excel file reading
+library(readxl)
+
+#Importing the Data
+# Specify the file path to the Excel file
+file_path <- "C:/Users/Aqsa/Downloads/1657875746_day.xlsx"
+
+# Read the Excel file into a data frame
+bike_df <- read_excel(file_path)
+
+# Display the first 5 rows of the bike_df dataset
+head(bike_df, 5)
+
+#Omit the 'casual' and 'registered' variables because 'total_count' already includes the combined count of both.
+
+#Create new dataset excluding casual and registered variables
+bike_df<-subset(bike_df,select=-c(casual,registered))
+head(bike_df,5)
+
+#Dimension of Dataset
+dim(bike_df)
+
+#Summary of the dataset
+summary(bike_df)
+
+#Structure of Dataset
+str(bike_df)
+
+#Rename the columns for better understanding of variables
+
+#Rename the columns
+names(bike_df)<-c('rec_id','datetime','season','year','month','holiday','weekday','workingday','weather_condition','temp','atemp','humidity','windspeed','total_count')
+
+#Read the data after renaming the columns.
+head(bike_df,5)
+
+#Typecasting the datetime and numerical attributes to category
+
+bike_df$datetime<- as.Date(bike_df$datetime)
+bike_df$year<-as.factor(bike_df$year)
+bike_df$month<-as.factor(bike_df$month)
+bike_df$season <- as.factor(bike_df$season)
+bike_df$holiday<- as.factor(bike_df$holiday)
+bike_df$weekday<- as.factor(bike_df$weekday)
+bike_df$workingday<- as.factor(bike_df$workingday)
+bike_df$weather_condition<- as.factor(bike_df$weather_condition)
+
+#Missing value analysis
+#Missing values in dataset
+missing_val<-data.frame(apply(bike_df,2,function(x){sum(is.na(x))}))
+names(missing_val)[1]='missing_val'
+missing_val
+
+#There are no missing values in the dataset as indicated by the 'missing_val' column. Each variable, including 'rec_id' and 'datetime,' has zero missing values.
+
+
+#ggplot2 is utilized for creating versatile and customizable data visualizations in R, enabling the generation of complex plots with concise and expressive code.
+library(ggplot2)
+
+# Column plot for season-wise monthly distribution of counts
+ggplot(bike_df, aes(x = month, y = total_count, fill = season)) +
+  theme_bw() +
+  geom_col() +
+  scale_fill_manual(values = c("#0072B2", "#D55E00", "#009E73", "#CC79A7")) +  # Set custom colors
+  labs(x = 'Month', y = 'Total Count', title = 'Season-wise Monthly Distribution of Counts')
+
+# Column plot for weekday-wise monthly distribution of counts
+ggplot(bike_df, aes(x = month, y = total_count, fill = weekday)) +
+  theme_bw() +
+  geom_col() +
+  scale_fill_manual(values = c("#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854", "#ffd92f", "#e5c494")) +  # Set custom colors
+  labs(x = 'Month', y = 'Total Count', title = 'Weekday-wise Monthly Distribution of Counts')
+
+#Plot Type: Column Chart or Bar Chart
+#Analysis:
+  
+#The first plot illustrates the season-wise monthly distribution of bike rental counts. It reveals the variation in counts across different months within each season, with custom colors for better distinction.
+
+#The second plot displays the weekday-wise monthly distribution of bike rental counts. It depicts how counts vary across months for each weekday, using custom colors to differentiate weekdays.We can see from the above plots that there is a seasonal increase in bike rentals during the spring and summer, followed by a decrease during the fall and winter.Season 1 leads to spring, Season 2 to summer, Season 3 to autumn, and Season 4 to winter in this case.
+
+# Violin plot for yearly wise distribution of counts
+ggplot(bike_df, aes(x = factor(year), y = total_count, fill = factor(year))) +
+  geom_violin() +
+  theme_bw() +
+  scale_fill_manual(values = c("#1f78b4", "#33a02c", "#e31a1c", "#ff7f00")) +  # Set custom colors
+  labs(x = 'Year', y = 'Total Count', title = 'Yearly Wise Distribution of Counts') +
+  theme(legend.position="none", plot.title.position = "plot", plot.title = element_text(hjust = 0.5))
+
+#Plot Type: Violin Plot
+
+#Analysis:
+#The violin plot illustrates the distribution of bike rental counts over the years. Notably, the distribution is higher in the year 2012 compared to 2011. The custom colors distinguish the violin plots for each year, providing a visual representation of the count distribution.
+
+#Holiday wise distribution of counts
+
+# Column plot for holiday-wise distribution of counts
+ggplot(bike_df, aes(x = factor(holiday), y = total_count, fill = season)) +
+  geom_col() +
+  theme_bw() +
+  scale_fill_manual(values = c("#1f78b4", "#33a02c", "#e31a1c", "#ff7f00")) +  # Set custom colors
+  labs(x = 'Holiday', y = 'Total Count', title = 'Holiday Wise Distribution of Counts') +
+  theme(legend.position = "none", plot.title.position = "plot", plot.title = element_text(hjust = 0.5))
+
+#Plot Type: Grouped Column Chart
+
+#Analysis:
+#The bar plot demonstrates the distribution of bike rental counts based on holiday status. Notably, the counts are highest during non-holiday periods (0) compared to holidays (1) across different seasons. Custom colors differentiate the bars representing each season, providing a clear visual distinction in the plot.
+
+# Column plot for workingday-wise distribution of counts
+ggplot(bike_df, aes(x = factor(workingday), y = total_count, fill = season)) +
+  geom_col() +
+  theme_bw() +
+  scale_fill_manual(values = c("#1f78b4", "#33a02c", "#e31a1c", "#ff7f00")) +  # Set custom colors
+  labs(x = 'Workingday', y = 'Total Count', title = 'Workingday Wise Distribution of Counts') +
+  theme(legend.position = "none", plot.title.position = "plot", plot.title = element_text(hjust = 0.5))
+
+
+#Plot Type: Grouped Column Chart
+
+#Analysis:
+#The bar plot illustrates the distribution of bike rental counts based on working day status. Notably, the counts are relatively higher during working days (1) compared to non-working days (0) across different seasons. Custom colors distinguish the bars representing each season, providing a clear visual representation of the count distribution.
+
+# Define custom colors and corresponding labels
+custom_colors <- c("#1f78b4", "#33a02c", "#e31a1c", "#ff7f00")
+custom_labels <- c("Spring", "Summer", "Fall", "Winter")  # Adjust labels as needed
+
+# Column plot for weather_condition-wise distribution of counts
+ggplot(bike_df, aes(x = factor(weather_condition), y = total_count, fill = season)) +
+  geom_col() +
+  theme_bw() +
+  scale_fill_manual(values = custom_colors, labels = custom_labels) +  # Set custom colors and labels
+  labs(x = 'Weather Condition', y = 'Total Count', title = 'Weather Condition Distribution of Counts') +
+  theme(plot.title.position = "plot", plot.title = element_text(hjust = 0.5))
+
+#Plot Type: Grouped Column Chart
+
+#Analysis:
+#The bar plot visualizes the distribution of bike rental counts based on different weather conditions. Clear and partly cloudy weather contributes to the highest bike rental counts, followed by misty and cloudy weather, and then light snow and light rain conditions. Custom colors and labels are applied to enhance the clarity and interpretation of the plot.
+
+# Set a colorful palette
+colors <- c("#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854", "#ffd92f", "#e5c494")
+
+# Create a boxplot with custom colors
+boxplot(bike_df$total_count, 
+        col = colors,
+        main = 'Total_count',
+        sub = paste("Outliers: ", boxplot.stats(bike_df$total_count)$out))
+
+#Plot Type: Boxplot
+
+#Analysis:
+#The boxplot depicts the distribution of the 'total_count' variable, revealing that there are no outliers present. The colorful palette enhances the visual representation of the boxplot, with summary statistics displayed in the subtitle.
+
+# Set a colorful palette
+colors <- c("#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854", "#ffd92f", "#e5c494")
+
+# Create a 2x2 layout for box plots
+par(mfrow = c(2, 2))
+
+# Box plot for temp outliers
+boxplot(bike_df$temp, 
+        col = colors[1],  # Use the first color in the palette
+        main = "Temperature",
+        sub = paste("Outliers: ", boxplot.stats(bike_df$temp)$out),
+        at = 1)
+
+# Box plot for humidity outliers
+boxplot(bike_df$humidity, 
+        col = colors[2],  # Use the second color in the palette
+        main = "Humidity",
+        sub = paste("Outliers: ", boxplot.stats(bike_df$humidity)$out),
+        at = 2)
+
+# Box plot for windspeed outliers
+boxplot(bike_df$windspeed, 
+        col = colors[3],  # Use the third color in the palette
+        main = "Windspeed",
+        sub = paste("Outliers: ", boxplot.stats(bike_df$windspeed)$out),
+        at = 3)
+
+
+#Plot Type: Boxplots (Temperature, Humidity, Windspeed)
+
+#Analysis:
+#The series of boxplots examines outliers in different variables. The boxplot for temperature indicates no outliers. However, in the case of windspeed and humidity, a few outliers are observed, suggesting some data points deviate significantly from the typical range in these variables.
+
+#Replace and imputate the outliers
+#load the DMwR library
+library(DMwR)
+#create subset for windspeed and humidity variable
+wind_hum<-subset(bike_df,select=c('windspeed','humidity'))
+#column names of wind_hum
+cnames<-colnames(wind_hum)
+for(i in cnames){
+  val=wind_hum[,i][wind_hum[,i] %in% boxplot.stats(wind_hum[,i])$out] #outlier values
+  wind_hum[,i][wind_hum[,i] %in% val]= NA  # Replace outliers with NA 
+}
+#Imputating the missing values using mean imputation method
+wind_hum$windspeed[is.na(wind_hum$windspeed)]<-mean(wind_hum$windspeed,na.rm=T) 
+wind_hum$humidity[is.na(wind_hum$humidity)]<-mean(wind_hum$humidity,na.rm=T)
+
+#Combaining the imputated dataset and original dataset
+
+#Remove the windspeed and humidity variable in order to replace imputated data
+new_df<-subset(bike_df,select=-c(windspeed,humidity))
+#Combined new_df and wind_hum data frames
+bike_df<-cbind(new_df,wind_hum)
+head(bike_df,5)
+
+
+#Normal probability plot
+#Normal probability plot is a graphical technique to identify substantive departures from normality and also it tells about goodness of fit.
+
+#Quintle-Quintle normal plot
+qqnorm(bike_df$total_count)
+#Quintle-Quintle line
+qqline(bike_df$total_count)
+#From the above probability plot, we can observed that some target variable data points are deviates from normality.
+
+
+#Correlation Matrix
+
+#Correlation matrix is tells about linear relationship between attributes and help us to build better models.
+
+#load the corrgram for correlation
+
+library(corrgram)
+#Correlation plot
+corrgram(bike_df[,10:14],order=F,upper.panel=panel.pie,text.panel=panel.txt,main='Correlation Plot')
+
+#Plot Type: Correlation Plot
+
+#Analysis:
+#The correlation plot visually represents the correlation between different features in the dataset. It reveals both positive and negative correlations among the variables. Specifically, 'temp' and 'atemp' are highly positively correlated, indicating redundancy in information. Consequently, the decision is made to exclude the 'atemp' variable from further analysis.
+
+
+#Split the dataset into train and test dataset
+
+#load the purrr library for functions and vectors
+library(purrr)
+#Split the dataset based on simple random resampling
+train_index<-sample(1:nrow(bike_df),0.7*nrow(bike_df))
+train_data<-bike_df[train_index,]
+test_data<-bike_df[-train_index,]
+dim(train_data)
+dim(test_data)
+
+#train and test data
+
+
+#Read the train and test data
+head(train_data,5)
+head(test_data,5)
+
+#Selecting the required independent and dependent variables
+
+
+#Create a new subset for train attributes 
+train<-subset(train_data,select=c('season','year','month','holiday', 'weekday','workingday','weather_condition','temp','humidity','windspeed','total_count'))
+#Create a new subset for test attributes
+test<-subset(test_data,select=c('season','year','month','holiday','weekday','workingday','weather_condition','temp','humidity','windspeed','total_count'))
+head(train,5)
+head(test,5)
+
+#Train and test categorical and numerical attributes
+
+
+#create a new subset for train categorical attributes
+train_cat_attributes<-subset(train,select=c('season','holiday','workingday','weather_condition','year'))
+#create a new subset for test categorical attributes
+test_cat_attributes<-subset(test,select=c('season','holiday','workingday','weather_condition','year'))
+#create a new subset for train numerical attributes
+train_num_attributes<-subset(train,select=c('weekday','month','temp','humidity','windspeed','total_count'))
+#create a new subset for test numerical attributes
+test_num_attributes<-subset(test,select=c('weekday','month','temp', 'humidity','windspeed','total_count'))
+
+
+#Encoding the categorical features
+
+#Train_encoded_attributes
+
+#load the caret library
+library(caret)
+#other variables along with target variable to get dummy variables
+othervars<-c('month','weekday','temp','humidity','windspeed','total_count')
+set.seed(2626)
+#Categorical variables
+vars<-setdiff(colnames(train),c(train$total_count,othervars))
+#formula pass through encoder to get dummy variables
+f <- paste('~', paste(vars, collapse = ' + '))
+#encoder is encoded the categorical variables to numeric
+encoder<-dummyVars(as.formula(f), train)
+#Predicting the encode attributes
+encode_attributes<-predict(encoder,train)
+#Binding the train_num_attributes and encode_attributes
+train_encoded_attributes<-cbind(train_num_attributes,encode_attributes)
+head(train_encoded_attributes,5)
+
+
+#Test_encoded_attributes
+set.seed(5662)
+#Categorical variables
+vars<-setdiff(colnames(test),c(test$total_count,othervars))
+#formula pass through encoder to get dummy variables
+f<- paste('~',paste(vars,collapse='+'))
+#Encoder is encoded the categorical variables to numeric
+encoder<-dummyVars(as.formula(f),test)
+#Predicting the encoder attributes
+encode_attributes<-predict(encoder,test)
+#Binding the test_num_attributes and encode_attributes
+test_encoded_attributes<-cbind(test_num_attributes,encode_attributes)
+head(test_encoded_attributes,5)
+
+
+#Modelling the training dataset
+
+#Random Forest
+
+set.seed(6788271)
+#load the randomForest library
+library(randomForest)
+#training the model
+rf_model<-randomForest(total_count~.,train_encoded_attributes,importance=TRUE,ntree=200)
+rf_model
+
+#Cross validation prediction for Random Forest
+
+
+options(warn=-1)
+set.seed(6772)
+library(randomForest)
+#load the ranger library for random forest CV
+library(ranger)
+#Cross validation resampling method
+train.control<-trainControl(method='CV',number=3)
+#Cross validation prediction
+rf_CV_predict<-train(total_count~.,train_encoded_attributes,method='ranger',trControl=train.control)
+rf_CV_predict
+
+
+#Cross validation prediction plot
+residuals<-resid(rf_CV_predict)
+plot(y_train,residuals,xlab='Observed',ylab='Residuals',main='Cross validation prediction plot')
+abline(0,0)
+
+#Cross validation prediction plot tells about finite variance between actual target value and predicted target value. In this plot, some data points are have same finite variance between them and for some are not have it.
+
+#Model performance on the test dataset
+set.seed(7889)
+#Predicting the model
+rf_predict<-predict(rf_model,test_encoded_attributes[,-c(6)])
+head(rf_predict,5)
+
+#Root mean squared error and mean absolute error
+
+
+set.seed(667)
+#Root mean squared error
+rmse<-RMSE(y_test,rf_predict)
+print(rmse)
+mae<-MAE(y_test,rf_predict)
+print(mae)
+
+#Residual plot
+residuals<-y_test-rf_predict
+plot(y_test,residuals,xlab='Observed',ylab='Residuals',main='Residual plot')
+abline(0,0)
+#Residual plot tells about finite variance between actual target value and predicted target value. In this plot, some data points are have same finite variance between them and for some are not have it.
+
+#Final model for predicting the bike rental count on daily basis
+
+#When we compare the root mean squared error and mean absolute error of all 3 models, the random forest model has less root mean squared error and mean absolute error. So, finally random forest model is best for predicting the bike rental count on daily basis.
+
+Bike_predictions=data.frame(y_test,rf_predict)
+write.csv(Bike_predictions,'Bike_Renting_R.CSV',row.names=F)
+Bike_predictions
+
+
+
+
+
+
+
